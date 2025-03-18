@@ -25,6 +25,10 @@ def process_cli_input(file_path, history, t):
     except Exception as e:
         print(f"Invalid Input - Error: {str(e)}")
 
+#Use case 2: Handling Control Traffic
+def switch_control(control_values, signal_values):
+    control_values[signal_values[0]] = signal_values[1]
+
 def main():
     history = []
     t = 0
@@ -48,8 +52,6 @@ def main():
 if __name__ == '__main__':
     main()
 
-#Use case 2: Handling Control Traffic
-def switch_control(control_values, signal_values):
-    control_values[signal_values[0]] = signal_values[1];
+
 
 
