@@ -30,18 +30,25 @@ def process_cli_input(file_path, history, t):
 def switch_control(signal_values):
     # check for signal values and valid index
     if signal_values and (signal_values[0] - 1) >= 0 and (signal_values[0] - 1) <= 3:
+        # get index and value from signal
         index = signal_values[0] - 1
         value = signal_values[1]
+        # make change to hardware
         mutate_hardware(file_path, index, value)
     return signal_values
 
 #Use case 4: Handling Cron Jobs
 def handle_inactivity(t, history, state_values):
-    if not t % 10:
-        s1, s2 = state_values[0], state_values[1]
-        mutate_database(file_path, 0, s2)
-        mutate_database(file_path, 1, s1)
-        history.append(f"{t} swap {s1} {s2}")
+    # check time requirement
+    if t % 10 == 0:
+        # add swap to history
+        history.append(f"{t} swap {state_values[0]} {state_values[1]}")
+        # swap values
+        state_values[0], state_values[1] = state_values[1], state_values[0]
+        # swap in database
+        mutate_database(file_path, 0, state_values[0])
+        mutate_database(file_path, 1, state_values[1])
+        
     return state_values
 
 def main():
@@ -49,7 +56,7 @@ def main():
     t = 0
 
 
-    while t < 60:
+    while t < 20:
         state_values, control_values, signal_values = read_hardware_state(file_path)
         t += 1
 
@@ -66,6 +73,7 @@ def main():
 
         # Write Your Code Here End
         time.sleep(1)  # Wait for 1 second before polling again
+    # recovery and documentation (case 5)
     print(history)
 
 if __name__ == '__main__':
