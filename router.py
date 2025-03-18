@@ -24,11 +24,25 @@ def process_cli_input(file_path, history, t):
                 history.append(f"{t} set {index} {value}")
     except Exception as e:
         print(f"Invalid Input - Error: {str(e)}")
+    time.sleep(1)
 
 #Use case 2: Handling Control Traffic
-def switch_control(control_values, signal_values):
-    control_values[signal_values[0] - 1] = signal_values[1]
-    return control_values
+def switch_control(signal_values):
+    # check for signal values and valid index
+    if signal_values and (signal_values[0] - 1) >= 0 and (signal_values[0] - 1) <= 3:
+        index = signal_values[0] - 1
+        value = signal_values[1]
+        mutate_hardware(file_path, index, value)
+    return signal_values
+
+#Use case 4: Handling Cron Jobs
+def handle_inactivity(t, history, state_values):
+    if not t % 10:
+        s1, s2 = state_values[0], state_values[1]
+        mutate_database(file_path, 0, s2)
+        mutate_database(file_path, 1, s1)
+        history.append(f"{t} swap {s1} {s2}")
+    return state_values
 
 def main():
     history = []
@@ -40,13 +54,17 @@ def main():
         t += 1
 
         # Write Your Code Here Start
-        write_hardware_state(file_path, state_values, switch_control(control_values, signal_values), signal_values)
 
-        # request cli input for management functionality
-        process_cli_input(file_path, history, t)
-        
+        # handle control traffic (case 2)
+        signal_values = switch_control(signal_values)
+
+        # handle management functionality (case 3)
+        # process_cli_input(file_path, history, t)
+
+        # handle cron job (case 4)
+        state_values = handle_inactivity(t, history, state_values)
+
         # Write Your Code Here End
-
         time.sleep(1)  # Wait for 1 second before polling again
     print(history)
 
