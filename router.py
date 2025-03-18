@@ -36,6 +36,9 @@ def main():
 
         # Write Your Code Here Start
 
+        # request cli input for management functionality
+        process_cli_input(file_path, history, t)
+        
         # Write Your Code Here End
 
         time.sleep(1)  # Wait for 1 second before polling again
