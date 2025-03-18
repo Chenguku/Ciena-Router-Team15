@@ -35,6 +35,7 @@ def main():
         t += 1
 
         # Write Your Code Here Start
+        write_hardware_state(file_path, state_values, switch_control(control_values, signal_values), signal_values)
 
         # request cli input for management functionality
         process_cli_input(file_path, history, t)
@@ -46,3 +47,9 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+#Use case 2: Handling Control Traffic
+def switch_control(control_values, signal_values):
+    control_values[signal_values[0]] = signal_values[1];
+
+
