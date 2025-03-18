@@ -12,7 +12,12 @@ def print_cli_history(history):
 def process_cli_input(file_path, history, t):
     # Process CLI input here
     try:
-        user_input = input("Enter CLI command: ")
+        print("Enter CLI command: ")
+        user_input = select.select([sys.stdin], [], [], 1)[0]
+        if user_input:
+            user_input = sys.stdin.readline().strip()
+        else:
+            return
         command, *args = user_input.split()
         if command == "set":
             index = int(args[0]) - 1
