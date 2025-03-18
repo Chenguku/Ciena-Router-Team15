@@ -29,30 +29,56 @@ def process_cli_input(file_path, history, t):
                 history.append(f"{t} set {index} {value}")
     except Exception as e:
         print(f"Invalid Input - Error: {str(e)}")
+    time.sleep(1)
 
 #Use case 2: Handling Control Traffic
-def switch_control(control_values, signal_values):
-    control_values[signal_values[0] - 1] = signal_values[1]
-    return control_values
+def switch_control(signal_values):
+    # check for signal values and valid index
+    if signal_values and (signal_values[0] - 1) >= 0 and (signal_values[0] - 1) <= 3:
+        # get index and value from signal
+        index = signal_values[0] - 1
+        value = signal_values[1]
+        # make change to hardware
+        mutate_hardware(file_path, index, value)
+    return signal_values
+
+#Use case 4: Handling Cron Jobs
+def handle_inactivity(t, history, state_values):
+    # check time requirement
+    if t % 10 == 0:
+        # add swap to history
+        history.append(f"{t} swap {state_values[0]} {state_values[1]}")
+        # swap values
+        state_values[0], state_values[1] = state_values[1], state_values[0]
+        # swap in database
+        mutate_database(file_path, 0, state_values[0])
+        mutate_database(file_path, 1, state_values[1])
+        
+    return state_values
 
 def main():
     history = []
     t = 0
 
 
-    while t < 60:
+    while t < 20:
         state_values, control_values, signal_values = read_hardware_state(file_path)
         t += 1
 
         # Write Your Code Here Start
-        write_hardware_state(file_path, state_values, switch_control(control_values, signal_values), signal_values)
 
-        # request cli input for management functionality
-        process_cli_input(file_path, history, t)
-        
+        # handle control traffic (case 2)
+        signal_values = switch_control(signal_values)
+
+        # handle management functionality (case 3)
+        # process_cli_input(file_path, history, t)
+
+        # handle cron job (case 4)
+        state_values = handle_inactivity(t, history, state_values)
+
         # Write Your Code Here End
-
         time.sleep(1)  # Wait for 1 second before polling again
+    # recovery and documentation (case 5)
     print(history)
 
 if __name__ == '__main__':
