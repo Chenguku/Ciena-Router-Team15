@@ -12,11 +12,12 @@ def print_cli_history(history):
 def process_cli_input(file_path, history, t):
     # Process CLI input here
     try:
+        # time out for command to unblock
         print("Enter CLI command: ")
         user_input = select.select([sys.stdin], [], [], 1)[0]
         if user_input:
             user_input = sys.stdin.readline().strip()
-        else:
+        else: # no input, continue
             return
         command, *args = user_input.split()
         if command == "set":
@@ -27,12 +28,15 @@ def process_cli_input(file_path, history, t):
             else:
                 mutate_database(file_path, index, value)
                 history.append(f"{t} set {index} {value}")
+        # unrecognized command
+        else:
+            print(f"Invalid Command - Error: {user_input}")
     except Exception as e:
         print(f"Invalid Input - Error: {str(e)}")
     time.sleep(1)
 
 #Use case 2: Handling Control Traffic
-def switch_control(signal_values):
+def switch_control(signal_values, control_values):
     # check for signal values and valid index
     if signal_values and (signal_values[0] - 1) >= 0 and (signal_values[0] - 1) <= 3:
         # get index and value from signal
@@ -40,7 +44,8 @@ def switch_control(signal_values):
         value = signal_values[1]
         # make change to hardware
         mutate_hardware(file_path, index, value)
-    return signal_values
+        control_values[index] = value
+    return control_values
 
 #Use case 4: Handling Cron Jobs
 def handle_inactivity(t, history, state_values):
@@ -61,22 +66,23 @@ def main():
     t = 0
 
 
-    while t < 20:
+    while t < 60:
         state_values, control_values, signal_values = read_hardware_state(file_path)
         t += 1
 
         # Write Your Code Here Start
 
         # handle control traffic (case 2)
-        signal_values = switch_control(signal_values)
-
-        # handle management functionality (case 3)
-        # process_cli_input(file_path, history, t)
+        control_values = switch_control(signal_values, control_values)
 
         # handle cron job (case 4)
         state_values = handle_inactivity(t, history, state_values)
 
+        # handle management functionality (case 3)
+        process_cli_input(file_path, history, t)
+
         # Write Your Code Here End
+
         time.sleep(1)  # Wait for 1 second before polling again
     # recovery and documentation (case 5)
     print(history)
